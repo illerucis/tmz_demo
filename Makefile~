@@ -1,2 +1,0 @@
-all:
-	gcc tmzdemo1.c gridtmz.c ricker.c ezinc.c -o tmzdemo
