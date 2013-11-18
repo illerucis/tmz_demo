@@ -14,7 +14,8 @@ void ezIncInit(Grid *g){
 double ezInc(double time, double location) {
     double arg;
     if (ppw <= 0) {
-        fprintf(stderr,"ezInc: ezIncInit() must be called before ezInc.\n Points per wavelength must be positive.\n");
+        fprintf(stderr,"ezInc: ezIncInit() must be called before ezInc.\n"
+                "Points per wavelength must be positive.\n");
         exit(-1);
     }
     arg = M_PI*((cdtds*time - location) / ppw - 1.0);

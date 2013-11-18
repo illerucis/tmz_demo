@@ -19,22 +19,25 @@ int main()
     // initialize snapshots
     snapshotInit2d(g);
 
-    /* do time stepping */
-    for (Time = 0; Time < MaxTime; Time++) {
+    /* do time stepping MaxTime */
+    for (Time = 0; Time < 30; Time++) {
         // update magnetic field
         updateH2d(g);
         // update electric field
         updateE2d(g);
 
         // add a source
-        int index = (SizeX / 2) * SizeYG(g) + (SizeY / 2);
-        g->ez[index] = ezInc(Time, 0.0);
+        Ez(SizeX / 2, SizeY / 2) = ezInc(Time, 0.0);
 
-        //Ez(SizeX / 2, SizeY / 2) = ezInc(Time, 0.0);
         // take a snapshot (if appropriate)
         snapshot2d(g);
-    }
 
+        if (Time % 10 == 0) {
+            printf("%f ", Ez(SizeX / 2, SizeY / 2));
+        }
+
+    }
+    
     return 0;
 
 }

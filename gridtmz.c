@@ -4,6 +4,7 @@
 
 void gridInit(Grid *g) {
 
+    // x
     double imp0 = 377.0;
     int mm, nn;
 

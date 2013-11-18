@@ -69,7 +69,6 @@ void snapshot2d(Grid *g) {
 
                 // store data as a float
                 temp = (float)Ez(mm, nn);
-
                 // write the float
                 fwrite(&temp, sizeof(float), 1, out);
             }

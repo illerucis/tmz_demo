@@ -1,5 +1,5 @@
 #include "fdtd-macro-tmz.h"
-
+#include <stdio.h>
 /*update magnetic field*/
 void updateH2d(Grid *g) {
 
@@ -36,8 +36,9 @@ void updateE2d(Grid *g) {
     } 
     else {
         for (mm = 1; mm < SizeX - 1; mm++) {
-            for (nn = 1; nn < SizeY - 1; nn++)
+            for (nn = 1; nn < SizeY - 1; nn++) {
                 Ez(mm, nn) = Ceze(mm, nn)*Ez(mm, nn) + Cezh(mm, nn)*((Hy(mm, nn) - Hy(mm - 1, nn)) - (Hx(mm, nn) - Hx(mm, nn - 1)));
+            }
         }
     }
     return;
