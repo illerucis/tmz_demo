@@ -4,7 +4,7 @@ function initializeGrid()
         "imp0"    : 377.0,
         "sizeX"   : 51,
         "sizeY"   : 41,
-        "maxTime" : 1000,
+        "maxTime" : 500,
         "cdtds"   : 1.0 / Math.sqrt(2.0),
         "ezMin"   : 0.0,
         "ezMax"   : 0.0,

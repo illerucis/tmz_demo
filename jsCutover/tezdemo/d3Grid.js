@@ -1,4 +1,3 @@
-
 function updated3Grid(data, d3Grid)
 {
 
@@ -13,6 +12,12 @@ function updated3Grid(data, d3Grid)
             });
         }
     }
+
+    var colorGrayScale = d3.scale.linear()
+        .domain([-3.0, -2.5, -2, -1.5, -1.0, -0.5, 0.0])
+        .range(["#000000", "#222222", "#444444", 
+                "#666666", "#888888", "#AAAAAA", "#CCCCCC"])
+    
 
     var colorScale = d3.scale.linear()
         .domain([-3.0, -2.5, -2, -1.5, -1.0, -0.5, 0.0])
@@ -53,6 +58,10 @@ function getd3Grid(g)
             });
         }
     }
+
+    var colorGrayScale = d3.scale.linear()
+        .domain([0.0, 1.0])
+        .range(["#000000", "#CCCCCC"])
 
     var colorScale = d3.scale.linear()
         .domain([0.0, 1.0])
