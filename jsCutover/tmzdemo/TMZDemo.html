@@ -16,7 +16,7 @@
       grid = initializeGrid();
 
       // get a new d3Grid
-      d3Grid = getd3Grid(grid);
+      d3Grid = getd3Grid(grid, grid.sizeX, grid.sizeY);
 
       // calculate the field at different time steps
       snapshots = initializeSimulation(grid);
@@ -25,6 +25,7 @@
       $("#runSim").click(function() { 
           runSimulation(snapshots, d3Grid); 
       });
+
     </script>
   </body>
 </html>
