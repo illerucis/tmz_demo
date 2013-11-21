@@ -84,9 +84,8 @@ function updateEField(g)
     // only update the z component of the electric field
     for (var i = 1; i < g.sizeX - 1; i++) {
         for (var j = 1; j < g.sizeY - 1; j++) {
-            var val = g.ceze[i][j] * g.ez[i][j] + g.cezh[i][j] *
+            g.ez[i][j] = g.ceze[i][j] * g.ez[i][j] + g.cezh[i][j] *
                 ( (g.hy[i][j] - g.hy[i - 1][j]) - (g.hx[i][j] - g.hx[i][j -1]) );
-            g.ez[i][j] = val;
         }
     }
 }
@@ -127,7 +126,7 @@ function initializeGOL(grid)
 function getNeighbor(gol, i, j) {
     if (i < 0 || j < 0) { return 0; }
     else if (i > gol.length - 1 || j > gol[0].length - 1) { return 0; }
-    else if (gol[i][j][0] === 1) { return 1; }
+    else if (gol[i][j][0] == 1) { return 1; }
     else return 0;
 }
 
@@ -135,19 +134,20 @@ function determineNewState(newEz, gol, newGol, i, j, neighbors)
 {
 
     // get the new eZ field
-    // var newValue = gol[i][j][1] + Math.abs(newEz) - 0.01*gol[i][j][1];
+    var newValue = gol[i][j][1] + Math.abs(newEz) - 0.01*gol[i][j][1];
     
-    // field off
-    var newValue = 0.0
+    // cells don't care about the field
+    // var newValue = 0.0
 
     newGol[i][j] = [gol[i][j][0], newValue];
 
     // if the cell is alive
     if (newGol[i][j][0] == 1) {
         // if fewer than 2 neighbors or greater than 3
-        if ((newGol[i][j][1] < 2.1) && (neighbors < 2 || neighbors > 3)) {
+        if ((newGol[i][j][1] < 2.2) && (neighbors < 2 || neighbors > 3)) {
             newGol[i][j] = [0, gol[i][j][1]];
         }
+        // potentially other living rules go here
     }
 
     // if the cell is dead and if it has more than 2 neighbors, the cell becomes liave
@@ -208,7 +208,7 @@ function runSimulation(snapshots, d3Grid)
             return;
         }
         updated3Grid(snapshots.data[count], d3Grid);
-    }, 100);
+    }, 50);
 }
 
 
@@ -217,7 +217,7 @@ function initializeSimulation(grid)
     // get a source, located in the middle of the grid
     source = initializeSource(grid);
 
-    snapshots = {"colorPartitions": null, "data": []};
+    snapshots = {"data": []};
 
     var startTime = 10;
     var temporalStride = 10;
@@ -230,12 +230,10 @@ function initializeSimulation(grid)
         // update the electric field
         updateEField(grid);
 
-        var sourceValue = calcSource(source, time);
-        
         if (time == grid.cutOff) { zeroFields(grid); }
         
         // update the value of the source
-        grid.ez[source.x][source.y] = sourceValue
+        grid.ez[source.x][source.y] = calcSource(source, time);
 
         // update cell positions and drop energy level
         grid.gol = calcNewGeneration(grid.ez, grid.gol, grid.sizeX, grid.sizeY);
