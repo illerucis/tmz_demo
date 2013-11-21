@@ -1,17 +1,15 @@
-function updated3Grid(g, d3Grid)
+function buildNodes(g)
 {
-    var sen = 5;
-
     nodes = [];
     data = g.ez;
-
+    // do this beforehand
     for (var i = 0; i < data.length; i++) {
         for (var j = 0; j < data[0].length; j++) {
             if (g.gol[i][j][0] == 1) {
                 var node = {
                     x     : i,
                     y     : j,
-                    value : g.gol[i][j][1],
+                    value : Math.log(Math.abs(g.gol[i][j][1]) + Number.MIN_VALUE),
                     gol   : true
                 };
             }
@@ -27,14 +25,21 @@ function updated3Grid(g, d3Grid)
             nodes.push(node);
         }
     }
+    return nodes;
+}
 
+function updated3Grid(nodes, d3Grid)
+{
+    var sen = 5;
+    
     var colorGrayScale = d3.scale.linear()
         .domain([-3.0, -2.5, -2, -1.5, -1.0, -0.5, 0.0])
         .range(["#000000", "#222222", "#444444", 
                 "#666666", "#888888", "#AAAAAA", "#CCCCCC"])
+    
 
     var colorScale = d3.scale.linear()
-        .domain([0.0, 3.33, 6.66, 9.99, 13.32, 16.65, 20.0])
+        .domain([0, 0.71, 0.92, 1.11, 1.28, 1.44, 2.62])
         .range(["#0000FF", "#3333FF", "#33FFFF", 
                 "#66FF66", "#FFFF33", "#FF3333", "#990000"])
 
@@ -71,8 +76,8 @@ function getd3Grid(g, sizeX, sizeY)
                 gol   : false,
                 value : Math.abs(data[i][j] + Number.MIN_VALUE)
             }
-
-            if (g.gol[i][j][0] == 1) {
+            // JEFF use triple equals instead of double. double is weird (??)
+            if (g.gol[i][j][0] === 1) {
                 node.value = Math.abs(g.gol[i][j][1] + Number.MIN_VALUE);
                 node.gol = true;
             }

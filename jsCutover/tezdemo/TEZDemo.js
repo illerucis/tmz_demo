@@ -22,9 +22,9 @@ function initializeGrid()
     // initialize data
     for (var i = 0; i < grid.sizeX; i++) {
 
-        grid.hx[i] = new Array();
-        grid.chxh[i] = new Array();
-        grid.chxe[i] = new Array();
+        grid.hy[i] = new Array();
+        grid.chyh[i] = new Array();
+        grid.chye[i] = new Array();
 
         grid.hy[i] = new Array();
         grid.chyh[i] = new Array();

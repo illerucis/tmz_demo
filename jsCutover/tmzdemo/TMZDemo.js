@@ -5,9 +5,8 @@ function initializeGrid()
         "sizeX"   : 101,
         "sizeY"   : 81,
         "maxTime" : 500,
+        "cutOff"  : 250,
         "cdtds"   : 1.0 / Math.sqrt(2.0),
-        "ezMin"   : 0.0,
-        "ezMax"   : 0.0,
         "hx"      : new Array(),
         "chxh"    : new Array(),
         "chxe"    : new Array(),
@@ -34,7 +33,8 @@ function initializeGrid()
         grid.ez[i] = new Array();
         grid.ceze[i] = new Array();
         grid.cezh[i] = new Array();
-
+        
+        // JEFF get rid of the 2D arrays for constants
         for (var j = 0; j < grid.sizeY; j++) {
 
             // x data
@@ -87,12 +87,6 @@ function updateEField(g)
             var val = g.ceze[i][j] * g.ez[i][j] + g.cezh[i][j] *
                 ( (g.hy[i][j] - g.hy[i - 1][j]) - (g.hx[i][j] - g.hx[i][j -1]) );
             g.ez[i][j] = val;
-            if (val < g.ezMin) { 
-                g.ezMin = val;
-            }
-            if (val > g.ezMax) {
-                g.ezMax = val;
-            }
         }
     }
 }
@@ -115,33 +109,6 @@ function updateHField(g)
     }
 }
 
-function deepCopy(grid)
-{
-    newGrid = {ez: new Array(), gol: new Array()};
-    for (var i = 0; i < grid.ez.length; i++) {
-        newGrid.ez[i] = new Array();
-        newGrid.gol[i] = new Array();
-        for (var j = 0; j < grid.ez[0].length; j++) {
-            newGrid.ez[i][j] = grid.ez[i][j];
-            newGrid.gol[i][j] = [grid.gol[i][j][0], grid.gol[i][j][1]];
-        }
-    }
-    return newGrid;
-}
-
-function runSimulation(snapshots, d3Grid)
-{
-    var iteration = snapshots.length - 1, count = 0;
-    var timer = setInterval(function(){
-        count++;
-        if(count > iteration){
-            clearInterval(timer);
-            return;
-        }
-        grid2Draw = snapshots[count];
-        updated3Grid(grid2Draw, d3Grid);
-    }, 100);
-}
 
 function initializeGOL(grid)
 {
@@ -160,7 +127,7 @@ function initializeGOL(grid)
 function getNeighbor(gol, i, j) {
     if (i < 0 || j < 0) { return 0; }
     else if (i > gol.length - 1 || j > gol[0].length - 1) { return 0; }
-    else if (gol[i][j][0] == 1) { return 1; }
+    else if (gol[i][j][0] === 1) { return 1; }
     else return 0;
 }
 
@@ -168,13 +135,17 @@ function determineNewState(newEz, gol, newGol, i, j, neighbors)
 {
 
     // get the new eZ field
-    var newValue = gol[i][j][1] + Math.abs(newEz) - 0.01;
+    // var newValue = gol[i][j][1] + Math.abs(newEz) - 0.01*gol[i][j][1];
+    
+    // field off
+    var newValue = 0.0
+
     newGol[i][j] = [gol[i][j][0], newValue];
 
     // if the cell is alive
     if (newGol[i][j][0] == 1) {
         // if fewer than 2 neighbors or greater than 3
-        if ((newGol[i][j][1] < 10.0) && (neighbors < 2 || neighbors > 3)) {
+        if ((newGol[i][j][1] < 2.1) && (neighbors < 2 || neighbors > 3)) {
             newGol[i][j] = [0, gol[i][j][1]];
         }
     }
@@ -216,12 +187,37 @@ function calcNewGeneration(ez, gol, sizeX, sizeY)
     return newGol;
 }
 
+function zeroFields(grid)
+{
+    for (var i = 0; i < grid.sizeX; i++) {
+        for (var j = 0; j < grid.sizeY; j++) {
+            grid.ez[i][j] = 0.0;
+            grid.hx[i][j] = 0.0;
+            grid.hy[i][j] = 0.0;
+        }
+    }
+}
+
+function runSimulation(snapshots, d3Grid)
+{
+    var iteration = snapshots.data.length - 1, count = 0;
+    var timer = setInterval(function(){
+        count++;
+        if(count > iteration){
+            clearInterval(timer);
+            return;
+        }
+        updated3Grid(snapshots.data[count], d3Grid);
+    }, 100);
+}
+
+
 function initializeSimulation(grid)
 {
     // get a source, located in the middle of the grid
     source = initializeSource(grid);
 
-    snapshots = [];
+    snapshots = {"colorPartitions": null, "data": []};
 
     var startTime = 10;
     var temporalStride = 10;
@@ -234,18 +230,17 @@ function initializeSimulation(grid)
         // update the electric field
         updateEField(grid);
 
+        var sourceValue = calcSource(source, time);
+        
+        if (time == grid.cutOff) { zeroFields(grid); }
+        
         // update the value of the source
-        grid.ez[source.x][source.y] = calcSource(source, time);
+        grid.ez[source.x][source.y] = sourceValue
 
         // update cell positions and drop energy level
-        grid.gol = calcNewGeneration(grid.ez, grid.gol, 
-                                     grid.sizeX, grid.sizeY);
+        grid.gol = calcNewGeneration(grid.ez, grid.gol, grid.sizeX, grid.sizeY);
 
-        // re draw the grid
-        if (time >= startTime && (time - startTime) % temporalStride == 0) {
-            copiedGrid = deepCopy(grid);
-            snapshots.push(copiedGrid);
-        }
+        snapshots.data.push(buildNodes(grid));
     }
 
     return snapshots;
