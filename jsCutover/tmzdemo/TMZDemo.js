@@ -160,16 +160,16 @@ function calcNewGeneration(ez, gol, sizeX, sizeY)
         newGol[i] = new Array();
         for (var j = 0; j < sizeY; j++) {
 
-            var neighbors = 0;
-	    // right side, top & bottom, left side
-	    var potential_neighbors = [[i + 1, j + 1], [i + 1, j], [i + 1, j - 1], 
-				       [i, j - 1], [i, j + 1],
-				       [i - 1, j + 1], [i - 1, j], [i - 1, j - 1]];
-	    
-	    for (var k = 0; k < potential_neighbors.length; k++) {
-		var n = potential_neighbors[k];
-		neighbors += getNeighbor(gol, n[0], n[1]);
+	    var neighbors = 0;
+
+	    for (var k = -1; k < 2; k++) {
+		for (var l = -1; l < 2; l++) {
+		    if (!(k == 0 && l == 0)) {
+			neighbors += getNeighbor(gol, i + k, j + l);
+		    }
+		}
 	    }
+
             determineNewState(ez[i][j], gol, newGol, i, j, neighbors);
         }
     }
