@@ -259,21 +259,6 @@ function initializeSimulation(grid)
 
         snapshots.data.push(buildNodes(grid));
     }
-
-    var dd = []
-    for (var i = 0; i < grid.cutOff; i++) {
-    	var s = snapshots.data[i];
-    	for (var j = 0; j < s.length; j++) {
-    	    if (s[j].gol) {
-    		dd.push(s[j].value); 
-    	    }
-    	}
-    }
-    dd.sort()
-    var step = parseInt(dd.length / 6);
-    for (var i = 1; i < 7; i++) {
-    	console.log(dd[step*i - 1]);
-    }
     
     return snapshots;
 }
