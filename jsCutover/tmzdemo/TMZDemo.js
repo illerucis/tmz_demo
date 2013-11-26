@@ -2,10 +2,10 @@ function initializeGrid()
 {
     var grid = {
         "imp0"    : 377.0,
-        "sizeX"   : 101,
-        "sizeY"   : 81,
+        "sizeX"   : 51,
+        "sizeY"   : 41,
         "maxTime" : 500,
-        "cutOff"  : 250,
+        "cutOff"  : 300,
         "cdtds"   : 1.0 / Math.sqrt(2.0),
         "hx"      : new Array(),
         "chxh"    : new Array(),
@@ -116,18 +116,11 @@ function initializeGOL(grid)
         gol[i] = new Array();
         for (var j = 0; j < grid.sizeY; j++) {
             var x = Math.random();
-            if (x > 0.5) { gol[i][j] = [1, 0]; }
+            if (x > 0.80) { gol[i][j] = [1, 0]; }
             else { gol[i][j] = [0, 0]; }
         }
     }
     return gol
-}
-
-function getNeighbor(gol, i, j) {
-    if (i < 0 || j < 0) { return 0; }
-    else if (i > gol.length - 1 || j > gol[0].length - 1) { return 0; }
-    else if (gol[i][j][0] == 1) { return 1; }
-    else return 0;
 }
 
 function determineNewState(newEz, gol, newGol, i, j, neighbors)
@@ -136,15 +129,12 @@ function determineNewState(newEz, gol, newGol, i, j, neighbors)
     // get the new eZ field
     var newValue = gol[i][j][1] + Math.abs(newEz) - 0.01*gol[i][j][1];
     
-    // cells don't care about the field
-    // var newValue = 0.0
-
     newGol[i][j] = [gol[i][j][0], newValue];
 
     // if the cell is alive
     if (newGol[i][j][0] == 1) {
         // if fewer than 2 neighbors or greater than 3
-        if ((newGol[i][j][1] < 2.2) && (neighbors < 2 || neighbors > 3)) {
+        if ((newGol[i][j][1] < 5.5) && (neighbors < 2 || neighbors > 3)) {
             newGol[i][j] = [0, gol[i][j][1]];
         }
         // potentially other living rules go here
@@ -156,6 +146,13 @@ function determineNewState(newEz, gol, newGol, i, j, neighbors)
     }
 }
 
+function getNeighbor(gol, i, j) {
+    if (i < 0 || j < 0) { return 0; }
+    else if (i > gol.length - 1 || j > gol[0].length - 1) { return 0; }
+    else if (gol[i][j][0] == 1) { return 1; }
+    else return 0;
+}
+
 function calcNewGeneration(ez, gol, sizeX, sizeY)
 {
     newGol = new Array();
@@ -164,22 +161,15 @@ function calcNewGeneration(ez, gol, sizeX, sizeY)
         for (var j = 0; j < sizeY; j++) {
 
             var neighbors = 0;
-
-            // right side
-            neighbors += getNeighbor(gol, i+1, j+1);
-            neighbors += getNeighbor(gol, i+1, j);
-            neighbors += getNeighbor(gol, i+1, j-1);
-
-            // bottom
-            neighbors += getNeighbor(gol, i, j-1);
-            // top
-            neighbors += getNeighbor(gol, i, j+1);
-
-            // left side
-            neighbors += getNeighbor(gol, i-1, j+1);
-            neighbors += getNeighbor(gol, i-1, j);
-            neighbors += getNeighbor(gol, i-1, j-1);
-
+	    // right side, top & bottom, left side
+	    var potential_neighbors = [[i + 1, j + 1], [i + 1, j], [i + 1, j - 1], 
+				       [i, j - 1], [i, j + 1],
+				       [i - 1, j + 1], [i - 1, j], [i - 1, j - 1]];
+	    
+	    for (var k = 0; k < potential_neighbors.length; k++) {
+		var n = potential_neighbors[k];
+		neighbors += getNeighbor(gol, n[0], n[1]);
+	    }
             determineNewState(ez[i][j], gol, newGol, i, j, neighbors);
         }
     }
@@ -209,6 +199,35 @@ function runSimulation(snapshots, d3Grid)
         }
         updated3Grid(snapshots.data[count], d3Grid);
     }, 50);
+}
+
+function buildNodes(g)
+{
+    nodes = [];
+    data = g.ez;
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < data[0].length; j++) {
+            if (g.gol[i][j][0] == 1) {
+                var node = {
+                    x     : i,
+                    y     : j,
+                    value : Math.log(Math.abs(g.gol[i][j][1]) + Number.MIN_VALUE),
+                    gol   : true
+                };
+            }
+            else {
+                var node = {
+                    x     : i, 
+                    y     : j,
+                    gol   : false,
+                    value : Math.log(Math.abs(data[i][j] + Number.MIN_VALUE) / 0.5)
+                };
+
+            }
+            nodes.push(node);
+        }
+    }
+    return nodes;
 }
 
 
@@ -241,5 +260,20 @@ function initializeSimulation(grid)
         snapshots.data.push(buildNodes(grid));
     }
 
+    var dd = []
+    for (var i = 0; i < grid.cutOff; i++) {
+    	var s = snapshots.data[i];
+    	for (var j = 0; j < s.length; j++) {
+    	    if (s[j].gol) {
+    		dd.push(s[j].value); 
+    	    }
+    	}
+    }
+    dd.sort()
+    var step = parseInt(dd.length / 6);
+    for (var i = 1; i < 7; i++) {
+    	console.log(dd[step*i - 1]);
+    }
+    
     return snapshots;
 }
